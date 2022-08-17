@@ -6,6 +6,9 @@ class IngredientName(models.Model):
     name = models.CharField(max_length=79)
     measurement_unit = models.CharField(max_length=30)
 
+    def __str__(self):
+        return self.name
+
 
 class Ingredient(models.Model):
     ingredient_name = models.ForeignKey(
@@ -15,11 +18,17 @@ class Ingredient(models.Model):
     )
     amount = models.PositiveSmallIntegerField()
 
+    def __str__(self):
+        return self.ingredient_name.name
+
 
 class Tag(models.Model):
     name = models.CharField(max_length=256)
     color = models.CharField(max_length=10)
     slug = models.SlugField(unique=True)
+
+    def __str__(self):
+        return self.name
 
 
 class Recipe(models.Model):
@@ -39,6 +48,9 @@ class Recipe(models.Model):
     image = models.ImageField()
     text = models.TextField()
     cooking_time = models.PositiveSmallIntegerField()
+
+    def __str__(self):
+        return self.name
 
 
 class User(AbstractUser):

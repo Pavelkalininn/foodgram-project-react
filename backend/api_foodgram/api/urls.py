@@ -1,7 +1,7 @@
 from api import views
 from api.views import (UserViewSet, RecipeViewSet,
                        FavoriteViewSet, SubscriptionViewSet, IngredientViewSet,
-                       TagViewSet)
+                       TagViewSet, IngredientNameViewSet)
 from django.urls import include, path
 from rest_framework import routers
 
@@ -16,7 +16,7 @@ router.register('recipes', RecipeViewSet, basename='recipe-list')
 #     basename='shopping-cart'
 # )
 router.register(
-    'recipes/<recipe_id: int>/favorite/',
+    r'recipes\/?P<recipe_id>\d+\/favorite/',
     FavoriteViewSet,
     basename='favorite_changing'
 )
@@ -26,7 +26,7 @@ router.register(
     basename='subscription-list'
 )
 router.register('ingredients', IngredientViewSet, basename='ingredient-list')
-
+router.register('ingredient_names', IngredientNameViewSet, basename='ingredient_name-list')
 urlpatterns = [
    path('v1/', include(router.urls)),
    path('recipes/download_shopping_cart/',

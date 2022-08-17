@@ -18,7 +18,6 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
 
-
 class TagSerializer(serializers.ModelSerializer):
 
     class Meta:
@@ -33,27 +32,23 @@ class IngredientNameSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    name = serializers.SlugRelatedField(
-        # queryset=IngredientName.objects.all(),
-        slug_field='ingredient_name__name',
-        read_only=True
-    )
-    measurement_unit = serializers.SlugRelatedField(
-        # queryset=IngredientName.objects.all(),
-        slug_field='ingredient_name__measurement_unit',
-        read_only=True
-    )
+    ingredient_name = IngredientNameSerializer(read_only=True)
+    name = serializers.SerializerMethodField()
+    measurement_unit = serializers.SerializerMethodField()
 
     class Meta:
-        fields = 'amount', 'ingredient_name', 'name', 'measurement_unit'
+        fields = 'amount', 'ingredient_name'
         model = Ingredient
+
+        def get_name(self):
+            return self
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
-    tags = TagSerializer(many=True, required=True)
-    # author = UserSerializer(required=True)
-    ingredients = serializers.SlugRelatedField('name', read_only=True)
+    tags = TagSerializer(many=True, read_only=True)
+    # author = UserSerializer(read_only=True)
+    ingredients = IngredientSerializer(many=True, read_only=True)
 
     class Meta:
         fields = '__all__'
