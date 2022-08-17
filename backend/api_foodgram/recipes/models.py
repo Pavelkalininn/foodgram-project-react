@@ -46,7 +46,6 @@ class User(AbstractUser):
         'self',
         related_name='follower',
         symmetrical=False,
-        null=True,
         blank=True
     )
     recipes = models.ForeignKey(
@@ -59,12 +58,10 @@ class User(AbstractUser):
     favorited = models.ManyToManyField(
         Recipe,
         related_name='favored_user',
-        null=True,
         blank=True
     )
     shopping_cart = models.ManyToManyField(
         Recipe,
         related_name='cart_user',
-        null=True,
         blank=True
     )

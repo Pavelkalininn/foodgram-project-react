@@ -7,8 +7,16 @@ from recipes.models import User, Ingredient, Recipe, Tag, IngredientName
 class UserSerializer(serializers.ModelSerializer):
 
     class Meta:
-        fields = '__all__'
         model = User
+        fields = [
+            'id',
+            'subscriptions',
+            'recipes',
+            'favorited',
+            'shopping_cart',
+            'password'
+        ]
+
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -26,24 +34,26 @@ class IngredientNameSerializer(serializers.ModelSerializer):
 
 class IngredientSerializer(serializers.ModelSerializer):
     name = serializers.SlugRelatedField(
-        queryset=Ingredient.objects.all(),
-        slug_field='name'
+        # queryset=IngredientName.objects.all(),
+        slug_field='ingredient_name__name',
+        read_only=True
     )
     measurement_unit = serializers.SlugRelatedField(
-        queryset=Ingredient.objects.all(),
-        slug_field='measurement_unit'
+        # queryset=IngredientName.objects.all(),
+        slug_field='ingredient_name__measurement_unit',
+        read_only=True
     )
 
     class Meta:
-        fields = '__all__'
+        fields = 'amount', 'ingredient_name', 'name', 'measurement_unit'
         model = Ingredient
 
 
 class RecipeSerializer(serializers.ModelSerializer):
     image = Base64ImageField()
     tags = TagSerializer(many=True, required=True)
-    author = UserSerializer(required=True)
-    ingredients = IngredientSerializer(many=True, required=True)
+    # author = UserSerializer(required=True)
+    ingredients = serializers.SlugRelatedField('name', read_only=True)
 
     class Meta:
         fields = '__all__'

@@ -1,6 +1,7 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render
 from rest_framework import filters, status, viewsets
+from rest_framework.decorators import api_view
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
@@ -73,6 +74,7 @@ class IngredientViewSet(viewsets.ModelViewSet):
     serializer_class = IngredientSerializer
 
 
+@api_view(['GET'])
 @login_required
 def get_shopping_cart(request):
     user = get_object_or_404(
@@ -91,4 +93,4 @@ def get_shopping_cart(request):
                 shopping_cart[key] += ingredient.amount
             else:
                 shopping_cart[key] = ingredient.amount
-    return Response(data=shopping_cart)
+    return Response(status=status.HTTP_204_NO_CONTENT, data=shopping_cart, content_type='json')
