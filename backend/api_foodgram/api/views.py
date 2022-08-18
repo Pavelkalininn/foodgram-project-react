@@ -32,25 +32,9 @@ class TagViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-
-
-# class ShoppingCartViewSet(viewsets.ModelViewSet):
-#     serializer_class = ShoppingCartSerializer
-#
-#     def get_queryset(self):
-#         user = get_object_or_404(
-#             User,
-#             id=self.request.user.pk
-#         )
-#         shopping_cart = {}
-#         for recipe in user.shopping_cart:
-#             for ingredient in recipe.ingredients:
-#                 key = ingredient.ingredient_name.name + ' ' + ingredient.ingredient_name.measurement_unit
-#                 if key in shopping_cart:
-#                     shopping_cart[key] += ingredient.amount
-#                 else:
-#                     shopping_cart[key] = ingredient.amount
-#         return shopping_cart
+    #  ВЫВЕСТИ
+    # is_favorited = models.BooleanField(default=False)
+    # is_in_shopping_cart = models.BooleanField(default=False)
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -66,7 +50,6 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         #     author=self.request.user,
         #     recipe=recipe
         # )
-
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -117,4 +100,8 @@ def get_shopping_cart(request):
         file.write(str(key) + ": " + str(value) + '\n')
     file.close()
     print('shopping_cart is empty')
-    return FileResponse(open('test.txt', 'w+'), as_attachment=True, content_type='application/txt', filename='test.txt')
+    return FileResponse(
+        open('test.txt', 'w+'),
+        as_attachment=True,
+        content_type='application/txt', filename='test.txt'
+    )

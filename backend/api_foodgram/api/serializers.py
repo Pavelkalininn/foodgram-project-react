@@ -4,7 +4,8 @@ from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
-from recipes.models import User, Ingredient, Recipe, Tag, IngredientName
+from recipes.models import User, Ingredient, Recipe, Tag, IngredientName, \
+    Subscription
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -22,10 +23,8 @@ class UserSerializer(serializers.ModelSerializer):
         ]
 
     def get_is_subscribed(self, obj):
-        if (
-                self.context.get('request').user != obj
-                and self.context.get('request').user in obj.subscriptions.all()
-        ):
+        if Subscription.objects.filter(
+                user=obj.id, author=self.context.get('request').user.id).all():
             return True
         return False
 
