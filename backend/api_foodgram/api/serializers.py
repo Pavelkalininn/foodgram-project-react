@@ -74,3 +74,11 @@ class SubscriptionSerializer(UserSerializer):
     class Meta:
         fields = 'id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes'
         model = User
+
+
+class FavoriteSerializer(serializers.ModelSerializer):
+    image = Base64ImageField()
+
+    class Meta:
+        fields = 'id', 'name', 'image', 'cooking_time'
+        model = Recipe

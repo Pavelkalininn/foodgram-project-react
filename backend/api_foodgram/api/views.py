@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from api.serializers import (
     UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
-    IngredientNameSerializer, SubscriptionSerializer
+    IngredientNameSerializer, SubscriptionSerializer, FavoriteSerializer
 )
 from recipes.models import User, Tag, Recipe, Ingredient, IngredientName
 
@@ -54,16 +54,19 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
-    serializer_class = RecipeSerializer
+    serializer_class = UserSerializer
     queryset = Recipe.objects.all()
 
     def perform_create(self, serializer):
         recipe_id = self.kwargs.get('recipe_id')
         recipe = get_object_or_404(Recipe, id=recipe_id)
-        serializer.save(
-            author=self.request.user,
-            recipe=recipe
-        )
+        self.request.user.favorited.add(recipe)
+        return self.request.user
+        # serializer.save(
+        #     author=self.request.user,
+        #     recipe=recipe
+        # )
+
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
