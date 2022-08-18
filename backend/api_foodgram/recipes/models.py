@@ -1,6 +1,8 @@
+from django.contrib.auth import get_user_model
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 
+User = get_user_model()
 
 class IngredientName(models.Model):
     name = models.CharField(max_length=79)
@@ -59,13 +61,52 @@ class Recipe(models.Model):
         return self.name
 
 
-class User(AbstractUser):
-    subscriptions = models.ManyToManyField(
-        'self',
-        related_name='follower',
-        symmetrical=False,
-        blank=True
+class Subscription(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscription',
+        verbose_name='Подписчик'
     )
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscription',
+        verbose_name='Автор'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscription'),
+        ]
+
+
+class Favorite(models.Model):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='author',
+        verbose_name='Автор'
+    )
+
+    author = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='subscriber',
+        verbose_name='Подписчик'
+    )
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                fields=['user', 'author'],
+                name='unique_subscription'),
+        ]
+
+
     favorited = models.ManyToManyField(
         Recipe,
         related_name='favored_user',
