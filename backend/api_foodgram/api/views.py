@@ -1,13 +1,14 @@
 from django.contrib.auth.decorators import login_required
+from django.http import FileResponse
 from django.shortcuts import render
 from rest_framework import filters, status, viewsets
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, action
 from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api.serializers import (
     UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
-    IngredientNameSerializer
+    IngredientNameSerializer, SubscriptionSerializer
 )
 from recipes.models import User, Tag, Recipe, Ingredient, IngredientName
 
@@ -15,6 +16,12 @@ from recipes.models import User, Tag, Recipe, Ingredient, IngredientName
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     serializer_class = UserSerializer
+
+    @action(methods=['get'], detail=False)
+    def me(self, request):
+        user = User.objects.get(username=request.user.username)
+        serializer = self.get_serializer(user)
+        return Response(serializer.data)
 
 
 class TagViewSet(viewsets.ModelViewSet):
@@ -48,25 +55,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 class FavoriteViewSet(viewsets.ModelViewSet):
     serializer_class = RecipeSerializer
+    queryset = Recipe.objects.all()
 
-    def get_queryset(self):
-        user = get_object_or_404(
-            User,
-            id=self.request.user.pk
+    def perform_create(self, serializer):
+        recipe_id = self.kwargs.get('recipe_id')
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        serializer.save(
+            author=self.request.user,
+            recipe=recipe
         )
-        favorited = user.favorited
-        return favorited
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
-    serializer_class = UserSerializer
+    serializer_class = SubscriptionSerializer
 
     def get_queryset(self):
         user = get_object_or_404(
             User,
             id=self.request.user.pk
         )
-        subscriptions = user.subscriptions
+        subscriptions = user.subscriptions.all()
         return subscriptions
 
 
@@ -101,5 +109,9 @@ def get_shopping_cart(request):
                 shopping_cart[key] += ingredient.amount
             else:
                 shopping_cart[key] = ingredient.amount
+    file = open('test.txt', 'w+')
+    for key, value in shopping_cart.items():
+        file.write(str(key) + ": " + str(value) + '\n')
+    file.close()
     print('shopping_cart is empty')
-    return Response(status=status.HTTP_204_NO_CONTENT, data=shopping_cart, content_type='json')
+    return FileResponse(open('test.txt', 'w+'), as_attachment=True, content_type='application/txt', filename='test.txt')

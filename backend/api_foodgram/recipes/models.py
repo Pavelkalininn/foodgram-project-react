@@ -37,6 +37,12 @@ class Recipe(models.Model):
         related_name='recipes'
     )
     ### ТУТ НУЖНО ВЫВЕСТИ АВТОРА РЕЦЕПТА
+    author = models.ForeignKey(
+        'User',
+        related_name='recipes',
+        blank=True,
+        on_delete=models.CASCADE
+    )
     ingredients = models.ManyToManyField(
         Ingredient,
         related_name='recipes'
@@ -58,13 +64,6 @@ class User(AbstractUser):
         'self',
         related_name='follower',
         symmetrical=False,
-        blank=True
-    )
-    recipes = models.ForeignKey(
-        Recipe,
-        related_name='author',
-        on_delete=models.CASCADE,
-        null=True,
         blank=True
     )
     favorited = models.ManyToManyField(

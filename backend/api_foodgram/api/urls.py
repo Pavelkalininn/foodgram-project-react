@@ -16,7 +16,7 @@ router.register('recipes', RecipeViewSet, basename='recipe-list')
 #     basename='shopping-cart'
 # )
 router.register(
-    r'recipes\/?P<recipe_id>\d+\/favorite/',
+    r'recipes/(?P<recipe_id>\d+)/favorite',
     FavoriteViewSet,
     basename='favorite_changing'
 )
@@ -29,7 +29,7 @@ router.register('ingredients', IngredientViewSet, basename='ingredient-list')
 router.register('ingredient_names', IngredientNameViewSet, basename='ingredient_name-list')
 urlpatterns = [
    path('v1/', include(router.urls)),
-   path('recipes/download_shopping_cart/',
+   path('recipes/download_shopping_cart',
     views.get_shopping_cart,
     name='shopping-cart')
 ]
