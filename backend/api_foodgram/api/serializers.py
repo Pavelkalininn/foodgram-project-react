@@ -5,7 +5,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from recipes.models import User, Ingredient, Recipe, Tag, IngredientName, \
-    Subscription
+    Subscription, Favorite, ShoppingCart
 
 
 class UserSerializer(serializers.ModelSerializer):
@@ -24,7 +24,9 @@ class UserSerializer(serializers.ModelSerializer):
 
     def get_is_subscribed(self, obj):
         if Subscription.objects.filter(
-                user=obj.id, author=self.context.get('request').user.id).all():
+                user=obj.id,
+                author=self.context.get('request').user.id
+        ).exists():
             return True
         return False
 
@@ -61,18 +63,52 @@ class RecipeSerializer(serializers.ModelSerializer):
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
+    is_favorited = serializers.SerializerMethodField()
+    is_in_shopping_cart = serializers.SerializerMethodField()
 
     class Meta:
         fields = '__all__'
         model = Recipe
 
+    def get_is_favorited(self, obj):
+        return Favorite.objects.filter(
+                author=self.context.get('request').user.id,
+                recipe=obj.id
+        ).exists()
 
-class SubscriptionSerializer(UserSerializer):
-    recipes = RecipeSerializer(many=True, read_only=True)
+    def get_is_in_shopping_cart(self, obj):
+        return ShoppingCart.objects.filter(
+                author=self.context.get('request').user.id,
+                recipe=obj.id
+        ).exists()
+
+
+class SubscriptionRecipeSerializer(RecipeSerializer):
 
     class Meta:
-        fields = 'id', 'email', 'username', 'first_name', 'last_name', 'is_subscribed', 'recipes'
+        fields = 'id', 'name', 'image', 'cooking_time'
+        model = Recipe
+
+
+class SubscriptionSerializer(UserSerializer):
+    recipes = SubscriptionRecipeSerializer(many=True)
+    recipes_count = serializers.SerializerMethodField()
+
+    class Meta:
+        fields = (
+            'id',
+            'email',
+            'username',
+            'first_name',
+            'last_name',
+            'is_subscribed',
+            'recipes',
+            'recipes_count'
+        )
         model = User
+
+    def get_recipes_count(self, obj):
+        return obj.recipes.all().count()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):

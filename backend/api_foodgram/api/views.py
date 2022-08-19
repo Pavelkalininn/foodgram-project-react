@@ -1,6 +1,7 @@
+import http
+
 from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
-from django.shortcuts import render
 from rest_framework import filters, status, viewsets
 from rest_framework.decorators import api_view, action
 from rest_framework.generics import get_object_or_404
@@ -19,7 +20,14 @@ class UserViewSet(viewsets.ModelViewSet):
 
     @action(methods=['get'], detail=False)
     def me(self, request):
-        user = User.objects.get(username=request.user.username)
+
+        if request.user.is_anonymous:
+            return Response(
+                status=status.HTTP_401_UNAUTHORIZED,
+                data={"detail": "Учетные данные не были предоставлены."}
+            )
+        user = get_object_or_404(User, username=request.user.username)
+
         serializer = self.get_serializer(user)
         return Response(serializer.data)
 
@@ -32,9 +40,7 @@ class TagViewSet(viewsets.ModelViewSet):
 class RecipeViewSet(viewsets.ModelViewSet):
     queryset = Recipe.objects.all()
     serializer_class = RecipeSerializer
-    #  ВЫВЕСТИ
-    # is_favorited = models.BooleanField(default=False)
-    # is_in_shopping_cart = models.BooleanField(default=False)
+
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -60,7 +66,9 @@ class SubscriptionViewSet(viewsets.ModelViewSet):
             User,
             id=self.request.user.pk
         )
-        subscriptions = user.subscriptions.all()
+        subscriptions = [
+            sub.user for sub in user.subscription_from_author.all()
+        ]
         return subscriptions
 
 
