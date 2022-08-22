@@ -1,14 +1,16 @@
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import RegexValidator
 from django.db import models
 
 
 class User(AbstractUser):
-    USERNAME_FIELD = 'username'
-    REQUIRED_FIELDS = ['email', 'first_name', 'last_name']
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ('username', 'first_name', 'last_name')
     username = models.CharField(
         unique=True,
         max_length=150,
-        verbose_name='Логин'
+        verbose_name='Логин',
+        validators=(RegexValidator(regex=r'^[\w.@+-]+\Z'), )
     )
     first_name = models.CharField(
         max_length=150,
@@ -20,6 +22,7 @@ class User(AbstractUser):
     )
     email = models.EmailField(
         unique=True,
+        max_length=254,
         verbose_name='Почта'
     )
 
@@ -40,6 +43,7 @@ class IngredientName(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Наименование ингредиента'
         verbose_name_plural = 'Наименования ингредиентов'
 
@@ -59,6 +63,7 @@ class Ingredient(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
 
@@ -81,6 +86,7 @@ class Tag(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Тэг'
         verbose_name_plural = 'Тэги'
 
@@ -122,6 +128,7 @@ class Recipe(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
 
@@ -144,6 +151,7 @@ class Subscription(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Подписка'
         verbose_name_plural = 'Подписки'
         constraints = [
@@ -171,6 +179,7 @@ class Favorite(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Избранный рецепт'
         verbose_name_plural = 'Избранные рецепты'
         constraints = [
@@ -198,6 +207,7 @@ class ShoppingCart(models.Model):
     )
 
     class Meta:
+        ordering = ('-id',)
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзины'
         constraints = [

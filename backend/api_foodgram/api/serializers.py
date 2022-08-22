@@ -2,14 +2,24 @@ from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
+from rest_framework.mixins import CreateModelMixin, ListModelMixin, \
+    RetrieveModelMixin
 from rest_framework.response import Response
+from rest_framework.viewsets import GenericViewSet
 
-from recipes.models import User, Ingredient, Recipe, Tag, IngredientName, \
-    Subscription, Favorite, ShoppingCart
+from recipes.models import (
+    User,
+    Ingredient,
+    Recipe,
+    Tag,
+    IngredientName,
+    Subscription,
+    Favorite,
+    ShoppingCart,
+)
 
 
-class UserSerializer(serializers.ModelSerializer):
-    is_subscribed = serializers.SerializerMethodField(read_only=True)
+class UserCreateSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = User
@@ -18,9 +28,18 @@ class UserSerializer(serializers.ModelSerializer):
             'email',
             'username',
             'first_name',
-            'last_name',
-            'is_subscribed'
+            'last_name'
         ]
+
+
+class UserSerializer(serializers.ModelSerializer):
+    is_subscribed = serializers.SerializerMethodField(read_only=True)
+
+    class Meta:
+        model = User
+        parent_fields = list(UserCreateSerializer.Meta.fields)
+        parent_fields.append('is_subscribed')
+        fields = parent_fields
 
     def get_is_subscribed(self, obj):
         if Subscription.objects.filter(

@@ -11,5 +11,5 @@ urlpatterns = [
     ),
     path('api/', include('api.urls')),
     path('api/', include('djoser.urls')),
-    re_path('api/', include('djoser.urls.authtoken')),
+
 ]
