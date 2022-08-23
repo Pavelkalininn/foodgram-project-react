@@ -1,5 +1,5 @@
-from django.db.migrations import serializer
-from django.http import FileResponse, HttpResponse
+
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, action, permission_classes
@@ -18,7 +18,7 @@ from api.permissions import AuthorOrReadOnly
 from api.serializers import (
     UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
     IngredientNameSerializer, SubscriptionSerializer, UserCreateSerializer,
-    ShoppingCartSerializer
+    FavoriteSerializer
 )
 from recipes.models import User, Tag, Recipe, Ingredient, IngredientName, \
     ShoppingCart
@@ -189,8 +189,8 @@ def shopping_cart(request, recipe_id):
             author=user,
             recipe=recipe
         )
-        serializer = RecipeSerializer(recipe)
-        return Response(serializer.data)
+        serializer = FavoriteSerializer(recipe)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
     cart_object = get_object_or_404(
         ShoppingCart,
         author=user,
@@ -198,6 +198,6 @@ def shopping_cart(request, recipe_id):
     )
     cart_object.delete()
     return Response(
-        data={'detail': 'no content'},
+        data={'detail': 'Рецепт успешно удалён из корзины'},
         status=status.HTTP_204_NO_CONTENT
     )

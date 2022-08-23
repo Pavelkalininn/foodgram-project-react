@@ -162,10 +162,3 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = 'id', 'name', 'image', 'cooking_time'
         model = Recipe
-
-
-class ShoppingCartSerializer(serializers.ModelSerializer):
-
-    class Meta:
-        fields = '__all__'
-        model = ShoppingCart
