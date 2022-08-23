@@ -1,6 +1,6 @@
 import django_filters
 
-from recipes.models import Recipe
+from recipes.models import Recipe, Tag
 
 FILTER_CHOICES = (
     (1, True),
@@ -9,9 +9,10 @@ FILTER_CHOICES = (
 
 
 class RecipeFilter(django_filters.FilterSet):
-    tags = django_filters.CharFilter(
-        field_name='tags',
-        lookup_expr='slug'
+    tags = django_filters.ModelMultipleChoiceFilter(
+        queryset=Tag.objects.all(),
+        field_name='tags__slug',
+        to_field_name='slug',
     )
     author = django_filters.CharFilter(
         field_name='author',

@@ -11,11 +11,43 @@ from .models import (
     ShoppingCart
 )
 
+EMPTY_VALUE = 'значение не задано'
+
+
+class UserAdmin(admin.ModelAdmin):
+    search_fields = ('username', 'email', 'first_name')
+    list_filter = ('username', 'email', 'first_name')
+    empty_value_display = EMPTY_VALUE
+
+
+class RecipeAdmin(admin.ModelAdmin):
+    search_fields = ('name', 'author', 'tags', 'text')
+    list_filter = ('name', 'author', 'tags')
+    empty_value_display = EMPTY_VALUE
+    list_display = (
+        'name',
+        'author',
+        'text',
+        'image',
+        'cooking_time',
+        'adding_to_favorites_count'
+    )
+
+    def adding_to_favorites_count(self, obj):
+        return obj.favorite.count()
+
+
+class IngredientAdmin(admin.ModelAdmin):
+    search_fields = ('ingredient_name', )
+    list_filter = ('ingredient_name', )
+    empty_value_display = EMPTY_VALUE
+
+
 admin.site.register(Tag)
 admin.site.register(IngredientName)
 admin.site.register(Ingredient)
-admin.site.register(Recipe)
+admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Favorite)
 admin.site.register(ShoppingCart)
 admin.site.register(Subscription)
-admin.site.register(User)
+admin.site.register(User, UserAdmin)

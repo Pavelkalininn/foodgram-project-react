@@ -7,9 +7,21 @@ from rest_framework import routers
 
 router = routers.DefaultRouter()
 
-router.register('users', UserViewSet, basename='user-list')
-router.register('tags', TagViewSet, basename='tag-list')
-router.register('recipes', RecipeViewSet, basename='recipe-list')
+router.register(
+    'users',
+    UserViewSet,
+    basename='user-list'
+)
+router.register(
+    'tags',
+    TagViewSet,
+    basename='tag-list'
+)
+router.register(
+    'recipes',
+    RecipeViewSet,
+    basename='recipe-list'
+)
 
 router.register(
     r'recipes/(?P<recipe_id>\d+)/favorite',
@@ -21,13 +33,23 @@ router.register(
     SubscriptionViewSet,
     basename='subscription-list'
 )
-router.register('ingredients', IngredientViewSet, basename='ingredient-list')
 router.register(
-    'ingredient_names', IngredientNameViewSet, basename='ingredient_name-list')
+    'ingredients',
+    IngredientViewSet,
+    basename='ingredient-list'
+)
+router.register(
+    'ingredient_names',
+    IngredientNameViewSet,
+    basename='ingredient_name-list'
+)
 urlpatterns = [
+    path(
+        'recipes/download_shopping_cart',
+        views.get_shopping_cart,
+        name='shopping-cart'
+    ),
     path('', include(router.urls)),
     path('auth/', include('djoser.urls.authtoken')),
-    path('recipes/download_shopping_cart',
-         views.get_shopping_cart,
-         name='shopping-cart')
+
 ]

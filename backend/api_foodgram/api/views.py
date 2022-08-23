@@ -1,26 +1,21 @@
-import http
-
-from django.contrib.auth.decorators import login_required
 from django.http import FileResponse
-from django_filters import OrderingFilter
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
-from rest_framework.decorators import api_view, action
+from rest_framework import status, viewsets
+from rest_framework.decorators import api_view, action, permission_classes
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, \
-    RetrieveModelMixin
-from rest_framework.pagination import PageNumberPagination, \
-    LimitOffsetPagination
+from rest_framework.mixins import (
+    CreateModelMixin, ListModelMixin, RetrieveModelMixin
+)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.filters import RecipeFilter
 from api.paginations import LargeResultsSetPagination
+from api.permissions import AuthorOrReadOnly
 from api.serializers import (
     UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
-    IngredientNameSerializer, SubscriptionSerializer, FavoriteSerializer,
-    UserCreateSerializer
+    IngredientNameSerializer, SubscriptionSerializer, UserCreateSerializer
 )
 from recipes.models import User, Tag, Recipe, Ingredient, IngredientName
 
@@ -53,10 +48,9 @@ class UserViewSet(
         return UserSerializer
 
     def get_permissions(self):
-        print(self.kwargs.get('pk'))
         if self.action == 'me' or self.kwargs.get('pk'):
             return (IsAuthenticated(),)
-        return (AllowAny(), )
+        return (AllowAny(),)
 
 
 class TagViewSet(
@@ -75,6 +69,27 @@ class RecipeViewSet(viewsets.ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter
     filterset_fields = ('tags', 'author')
+    permission_classes = (AuthorOrReadOnly,)
+
+    def perform_create(self, serializer):
+        tag_ids = self.request.data.get('tags')
+        ingredients = []
+        for ingredient in self.request.data.get('ingredients'):
+            ingredient_name = get_object_or_404(
+                IngredientName,
+                id=ingredient.get('id')
+            )
+            ingredient, _ = Ingredient.objects.get_or_create(
+                ingredient_name=ingredient_name,
+                amount=ingredient.get('amount'),
+            )
+            ingredients.append(ingredient)
+        tags = Tag.objects.filter(id__in=tag_ids)
+        serializer.save(
+            author=self.request.user,
+            tags=tags,
+            ingredients=ingredients
+        )
 
 
 class FavoriteViewSet(viewsets.ModelViewSet):
@@ -86,10 +101,6 @@ class FavoriteViewSet(viewsets.ModelViewSet):
         recipe = get_object_or_404(Recipe, id=recipe_id)
         self.request.user.favorited.add(recipe)
         return self.request.user
-        # serializer.save(
-        #     author=self.request.user,
-        #     recipe=recipe
-        # )
 
 
 class SubscriptionViewSet(viewsets.ModelViewSet):
@@ -117,12 +128,13 @@ class IngredientNameViewSet(viewsets.ModelViewSet):
 
 
 @api_view(['GET'])
-# @login_required
+@permission_classes([IsAuthenticated])
 def get_shopping_cart(request):
+    print('download')
     user = get_object_or_404(
-                User,
-                id=request.user.pk
-            )
+        User,
+        id=request.user.pk
+    )
     shopping_cart = {}
 
     for recipe in user.shopping_cart.all():

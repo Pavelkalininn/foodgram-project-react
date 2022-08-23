@@ -1,11 +1,5 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
-from rest_framework.decorators import action
-from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import CreateModelMixin, ListModelMixin, \
-    RetrieveModelMixin
-from rest_framework.response import Response
-from rest_framework.viewsets import GenericViewSet
 
 from recipes.models import (
     User,
@@ -20,7 +14,6 @@ from recipes.models import (
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = User
         fields = [
@@ -91,19 +84,52 @@ class RecipeSerializer(serializers.ModelSerializer):
 
     def get_is_favorited(self, obj):
         return Favorite.objects.filter(
-                author=self.context.get('request').user.id,
-                recipe=obj.id
+            author=self.context.get('request').user.id,
+            recipe=obj.id
         ).exists()
 
     def get_is_in_shopping_cart(self, obj):
         return ShoppingCart.objects.filter(
-                author=self.context.get('request').user.id,
-                recipe=obj.id
+            author=self.context.get('request').user.id,
+            recipe=obj.id
         ).exists()
+
+    def validate_cooking_time(self, value):
+        if value not in range(1, 1000):
+            raise serializers.ValidationError(
+                'Введите время приготовления от 1 до 1000'
+            )
+        return value
+
+    def validate(self, obj):
+        request = self.context.get('request')
+        data = request.data
+        tag_ids = data.get('tags')
+        ingredient_ids = [
+            ingredient.get('id')
+            for ingredient in data.get('ingredients')
+        ]
+        if (
+                Tag.objects.filter(id__in=tag_ids).count() != len(tag_ids)
+                or IngredientName.objects.filter(
+                id__in=ingredient_ids).count() != len(ingredient_ids)
+        ):
+            raise serializers.ValidationError(
+                'Не найдено ингредиента или тэга с таким id'
+            )
+
+        if request.method not in ('PATCH'):
+            if Recipe.objects.filter(
+                    author=request.user,
+                    name=data.get('name')
+            ).exists():
+                raise serializers.ValidationError(
+                    'Ваш рецепт с таким названием уже есть.'
+                )
+        return obj
 
 
 class SubscriptionRecipeSerializer(RecipeSerializer):
-
     class Meta:
         fields = 'id', 'name', 'image', 'cooking_time'
         model = Recipe
@@ -127,7 +153,7 @@ class SubscriptionSerializer(UserSerializer):
         model = User
 
     def get_recipes_count(self, obj):
-        return obj.recipes.all().count()
+        return obj.recipes.count()
 
 
 class FavoriteSerializer(serializers.ModelSerializer):
