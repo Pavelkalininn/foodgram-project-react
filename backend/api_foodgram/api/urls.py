@@ -2,7 +2,7 @@ from api import views
 from api.views import (UserViewSet, RecipeViewSet,
                        FavoriteViewSet, SubscriptionViewSet, IngredientViewSet,
                        TagViewSet, IngredientNameViewSet)
-from django.urls import include, path
+from django.urls import include, path, re_path
 from rest_framework import routers
 
 router = routers.DefaultRouter()
@@ -45,8 +45,13 @@ router.register(
 )
 urlpatterns = [
     path(
-        'recipes/download_shopping_cart',
+        'recipes/download_shopping_cart/',
         views.get_shopping_cart,
+        name='download_shopping-cart'
+    ),
+    re_path(
+        r'recipes/(?P<recipe_id>\d+)/shopping_cart/',
+        views.shopping_cart,
         name='shopping-cart'
     ),
     path('', include(router.urls)),

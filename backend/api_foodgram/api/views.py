@@ -1,7 +1,9 @@
-from django.http import FileResponse
+from django.db.migrations import serializer
+from django.http import FileResponse, HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.mixins import (
     CreateModelMixin, ListModelMixin, RetrieveModelMixin
@@ -15,9 +17,11 @@ from api.paginations import LargeResultsSetPagination
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (
     UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
-    IngredientNameSerializer, SubscriptionSerializer, UserCreateSerializer
+    IngredientNameSerializer, SubscriptionSerializer, UserCreateSerializer,
+    ShoppingCartSerializer
 )
-from recipes.models import User, Tag, Recipe, Ingredient, IngredientName
+from recipes.models import User, Tag, Recipe, Ingredient, IngredientName, \
+    ShoppingCart
 
 
 class UserViewSet(
@@ -130,32 +134,70 @@ class IngredientNameViewSet(viewsets.ModelViewSet):
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
 def get_shopping_cart(request):
-    print('download')
     user = get_object_or_404(
         User,
         id=request.user.pk
     )
     shopping_cart = {}
 
-    for recipe in user.shopping_cart.all():
-        for ingredient in recipe.ingredients.all():
+    for cart_objects in user.cart.all():
+        for ingredient in cart_objects.recipe.ingredients.all():
             key = (
                     ingredient.ingredient_name.name
-                    + ' '
+                    + ' ('
                     + ingredient.ingredient_name.measurement_unit
+                    + ')'
             )
 
             if key in shopping_cart:
                 shopping_cart[key] += ingredient.amount
             else:
                 shopping_cart[key] = ingredient.amount
-    file = open('test.txt', 'w+')
+    cart_data = ''
     for key, value in shopping_cart.items():
-        file.write(str(key) + ": " + str(value) + '\n')
-    file.close()
-    print('shopping_cart is empty')
-    return FileResponse(
-        open('test.txt', 'w+'),
-        as_attachment=True,
-        content_type='application/txt', filename='test.txt'
+        cart_data += (str(key) + ": " + str(value) + '\n')
+    return HttpResponse(
+        cart_data,
+        headers={
+            'Content-Type': 'text/plain',
+            'Content-Disposition': 'attachment; filename="shopping_list.txt"',
+        }
+    )
+
+
+@api_view(['POST', 'DELETE'])
+@permission_classes([IsAuthenticated])
+def shopping_cart(request, recipe_id):
+    if not recipe_id.isnumeric() or int(recipe_id) <= 0:
+        raise ValidationError(
+            'Номер рецепта должен быть положительной цифрой.'
+        )
+    user = get_object_or_404(
+        User,
+        id=request.user.pk
+    )
+    if request.method == 'POST':
+        if ShoppingCart.objects.filter(
+                author=user,
+                recipe=recipe_id
+        ).exists():
+            raise ValidationError(
+                    'Уже есть такой рецепт в корзине.'
+                )
+        recipe = get_object_or_404(Recipe, id=recipe_id)
+        ShoppingCart.objects.create(
+            author=user,
+            recipe=recipe
+        )
+        serializer = RecipeSerializer(recipe)
+        return Response(serializer.data)
+    cart_object = get_object_or_404(
+        ShoppingCart,
+        author=user,
+        recipe=recipe_id
+    )
+    cart_object.delete()
+    return Response(
+        data={'detail': 'no content'},
+        status=status.HTTP_204_NO_CONTENT
     )

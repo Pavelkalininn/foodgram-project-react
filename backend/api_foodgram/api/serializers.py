@@ -118,7 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 'Не найдено ингредиента или тэга с таким id'
             )
 
-        if request.method not in ('PATCH'):
+        if request.method == 'PATCH':
             if Recipe.objects.filter(
                     author=request.user,
                     name=data.get('name')
@@ -162,3 +162,10 @@ class FavoriteSerializer(serializers.ModelSerializer):
     class Meta:
         fields = 'id', 'name', 'image', 'cooking_time'
         model = Recipe
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+
+    class Meta:
+        fields = '__all__'
+        model = ShoppingCart
