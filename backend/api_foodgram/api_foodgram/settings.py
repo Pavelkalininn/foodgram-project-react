@@ -1,11 +1,15 @@
+from dotenv import load_dotenv
+
 import os
 from pathlib import Path
 
+load_dotenv()
+
 BASE_DIR = Path(__file__).resolve().parent.parent
 
-SECRET_KEY = 'django-insecure-&ib+0r#rv0@kzhbi(2d9^)8)oq7=!xc#(3kj=ir8cn_x!+a%_b'
+SECRET_KEY = os.getenv("SECRET_KEY")
 
-DEBUG = True
+DEBUG = False
 
 ALLOWED_HOSTS = ['*']
 
@@ -57,8 +61,12 @@ WSGI_APPLICATION = 'api_foodgram.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': BASE_DIR / 'db.sqlite3',
+        'ENGINE': os.getenv('DB_ENGINE', default='django.db.backends.postgresql'),
+        'NAME': os.getenv('DB_NAME', default='postgres'),
+        'USER': os.getenv('POSTGRES_USER', default='postgres'),
+        'PASSWORD': os.getenv('POSTGRES_PASSWORD', default='postgres'),
+        'HOST': os.getenv('DB_HOST', default='db'),
+        'PORT': os.getenv('DB_PORT', default='5432')
     }
 }
 
@@ -90,6 +98,9 @@ USE_TZ = True
 STATIC_URL = '/static/'
 STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 
+MEDIA_URL = "/media/"
+MEDIA_ROOT = os.path.join(BASE_DIR, "media")
+
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 REST_FRAMEWORK = {
@@ -102,3 +113,10 @@ REST_FRAMEWORK = {
 }
 
 AUTH_USER_MODEL = 'recipes.User'
+
+ID_NOT_FOUND = 'Не найден {name} с таким id'
+ALREADY_CREATED = 'У вас уже есть {name} с таким названием'
+COOKING_TIME_LIMIT = 'Введите время приготовления от 1 до 1000'
+IS_A_POSITIVE_INT = 'Параметр {name} должен быть положительной цифрой.'
+HAVE_NOT_OBJECT_FOR_DELETE = '{name} уже отменена'
+DELETE_SUCCESS = '{name} успешно отменена'

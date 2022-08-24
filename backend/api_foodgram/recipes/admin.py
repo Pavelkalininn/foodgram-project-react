@@ -1,15 +1,7 @@
 from django.contrib import admin
 
-from .models import (
-    Recipe,
-    Ingredient,
-    Tag,
-    IngredientName,
-    Subscription,
-    User,
-    Favorite,
-    ShoppingCart
-)
+from .models import (Favorite, Ingredient, IngredientName, Recipe,
+                     ShoppingCart, Subscription, Tag, User)
 
 EMPTY_VALUE = 'значение не задано'
 
@@ -30,10 +22,10 @@ class RecipeAdmin(admin.ModelAdmin):
         'text',
         'image',
         'cooking_time',
-        'adding_to_favorites_count'
+        'add_to_favorites_count'
     )
 
-    def adding_to_favorites_count(self, obj):
+    def add_to_favorites_count(self, obj):
         return obj.favorite.count()
 
 

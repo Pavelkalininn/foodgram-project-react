@@ -4,6 +4,8 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.response import Response
 
 from api.serializers import SubscriptionRecipeSerializer
+from api_foodgram.settings import (ALREADY_CREATED, ID_NOT_FOUND,
+                                   IS_A_POSITIVE_INT)
 from recipes.models import Recipe
 
 
@@ -34,11 +36,11 @@ def cart_favorite_add_or_delete(
 ):
     if not recipe_id.isnumeric() or int(recipe_id) <= 0:
         raise ValidationError(
-            'Номер рецепта должен быть положительной цифрой.'
+            IS_A_POSITIVE_INT.format('рецепта')
         )
     if not Recipe.objects.filter(id=recipe_id).exists():
         raise ValidationError(
-            {'errors': f'Не обнаружено рецепта с таким id'}
+            {'errors': ID_NOT_FOUND.format(name='рецепт')}
         )
     recipe = get_object_or_404(Recipe, id=recipe_id)
     user = request.user
@@ -48,7 +50,7 @@ def cart_favorite_add_or_delete(
                 recipe=recipe
         ).exists():
             raise ValidationError(
-                    'Этот рецепт уже добавлен'
+                    ALREADY_CREATED.format(name='рецепт')
                 )
         model_class.objects.create(
             author=user,

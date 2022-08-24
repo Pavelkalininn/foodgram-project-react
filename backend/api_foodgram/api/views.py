@@ -1,12 +1,11 @@
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import status, viewsets, filters
-from rest_framework.decorators import api_view, action, permission_classes
+from rest_framework import filters, status, viewsets
+from rest_framework.decorators import action
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import (
-    CreateModelMixin, ListModelMixin, RetrieveModelMixin
-)
+from rest_framework.mixins import (CreateModelMixin, ListModelMixin,
+                                   RetrieveModelMixin)
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
@@ -14,19 +13,15 @@ from rest_framework.viewsets import GenericViewSet
 from api.filters import RecipeFilter
 from api.paginations import LargeResultsSetPagination
 from api.permissions import AuthorOrReadOnly
-from api.serializers import (
-    UserSerializer, TagSerializer, RecipeSerializer, IngredientSerializer,
-    SubscriptionSerializer, UserCreateSerializer, IngredientNameSerializer
-)
-from api.utils import shopping_cart_data_creator, cart_favorite_add_or_delete
-from recipes.models import (
-    User,
-    Tag,
-    Recipe,
-    Ingredient,
-    IngredientName,
-    ShoppingCart, Favorite, Subscription
-)
+from api.serializers import (IngredientNameSerializer, RecipeSerializer,
+                             SubscriptionSerializer, TagSerializer,
+                             UserCreateSerializer, UserSerializer)
+from api.utils import cart_favorite_add_or_delete, shopping_cart_data_creator
+from api_foodgram.settings import (ALREADY_CREATED, DELETE_SUCCESS,
+                                   HAVE_NOT_OBJECT_FOR_DELETE, ID_NOT_FOUND,
+                                   IS_A_POSITIVE_INT)
+from recipes.models import (Favorite, Ingredient, IngredientName, Recipe,
+                            ShoppingCart, Subscription, Tag, User)
 
 
 class UserViewSet(
@@ -36,8 +31,6 @@ class UserViewSet(
     GenericViewSet,
 ):
     pagination_class = LargeResultsSetPagination
-    filter_backends = (DjangoFilterBackend,)
-    filterset_fields = ('recipes__limit',)
 
     def get_queryset(self):
         if self.action not in ('subscriptions', 'subscribe'):
@@ -71,11 +64,11 @@ class UserViewSet(
     def subscribe(self, request, pk):
         if not pk.isnumeric() or int(pk) <= 0:
             raise ValidationError(
-                'Id пользователя должен быть положительной цифрой.'
+                IS_A_POSITIVE_INT.format('пользователя')
             )
         if not User.objects.filter(id=pk).exists():
             raise ValidationError(
-                {'errors': f'Не обнаружено пользователя с таким id'}
+                {'errors': ID_NOT_FOUND.format('пользователь')}
             )
         user = get_object_or_404(User, id=pk)
         author = request.user
@@ -86,7 +79,7 @@ class UserViewSet(
         if self.request.method == "POST":
             if subscription_exists:
                 raise ValidationError(
-                    'Этот пользователь уже добавлен'
+                    ALREADY_CREATED.format('подписчик')
                 )
             Subscription.objects.create(
                 author=author,
@@ -100,7 +93,7 @@ class UserViewSet(
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         if not subscription_exists:
             raise ValidationError(
-                {'errors': f'Вы не подписаны на этого автора'}
+                {'errors': HAVE_NOT_OBJECT_FOR_DELETE.format('Подписка')}
             )
         subscription = get_object_or_404(
             Subscription,
@@ -109,7 +102,7 @@ class UserViewSet(
         )
         subscription.delete()
         return Response(
-            {'detail': 'Подписка успешно отменена'},
+            {'detail': DELETE_SUCCESS.format('Подписка')},
             status=status.HTTP_204_NO_CONTENT,
         )
 
@@ -123,8 +116,8 @@ class UserViewSet(
                 raise ValidationError(
                     {
                         'errors':
-                        'Параметр recipe_limit должен быть числом больше нуля'
-                     }
+                            IS_A_POSITIVE_INT.format('recipe_limit')
+                    }
                 )
             context['recipes_limit'] = int(self.request.query_params.get(
                 'recipes_limit')
@@ -191,7 +184,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             shopping_cart_data_creator(request.user),
             headers={
                 'Content-Type': 'text/plain',
-                'Content-Disposition': 'attachment; filename="shopping_list.txt"',
+                'Content-Disposition':
+                    'attachment; filename="shopping_list.txt"',
             }
         )
 
@@ -210,6 +204,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
     @action(
         methods=('POST', 'DELETE'),
         permission_classes=(IsAuthenticated,),
+        filterset_class=RecipeFilter,
         detail=True
     )
     def favorite(self, request, pk):

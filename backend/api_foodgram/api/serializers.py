@@ -1,16 +1,10 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 
-from recipes.models import (
-    User,
-    Ingredient,
-    Recipe,
-    Tag,
-    IngredientName,
-    Subscription,
-    Favorite,
-    ShoppingCart,
-)
+from api_foodgram.settings import (ALREADY_CREATED, COOKING_TIME_LIMIT,
+                                   ID_NOT_FOUND)
+from recipes.models import (Favorite, Ingredient, IngredientName, Recipe,
+                            ShoppingCart, Subscription, Tag, User)
 
 
 class UserCreateSerializer(serializers.ModelSerializer):
@@ -71,7 +65,7 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 
 class RecipeSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
+    image = Base64ImageField(max_length=None, use_url=True)
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = IngredientSerializer(many=True, read_only=True)
@@ -97,7 +91,7 @@ class RecipeSerializer(serializers.ModelSerializer):
     def validate_cooking_time(self, value):
         if value not in range(1, 1000):
             raise serializers.ValidationError(
-                'Введите время приготовления от 1 до 1000'
+                COOKING_TIME_LIMIT
             )
         return value
 
@@ -115,7 +109,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                 id__in=ingredient_ids).count() != len(ingredient_ids)
         ):
             raise serializers.ValidationError(
-                'Не найдено ингредиента или тэга с таким id'
+                ID_NOT_FOUND.format('тэг')
             )
 
         if request.method == 'PATCH':
@@ -124,7 +118,7 @@ class RecipeSerializer(serializers.ModelSerializer):
                     name=data.get('name')
             ).exists():
                 raise serializers.ValidationError(
-                    'Ваш рецепт с таким названием уже есть.'
+                    ALREADY_CREATED.format('рецепт')
                 )
         return obj
 
