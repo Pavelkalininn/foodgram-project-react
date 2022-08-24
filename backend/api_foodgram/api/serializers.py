@@ -136,7 +136,7 @@ class SubscriptionRecipeSerializer(RecipeSerializer):
 
 
 class SubscriptionSerializer(UserSerializer):
-    recipes = SubscriptionRecipeSerializer(many=True)
+    recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 
     class Meta:
@@ -155,10 +155,6 @@ class SubscriptionSerializer(UserSerializer):
     def get_recipes_count(self, obj):
         return obj.recipes.count()
 
-
-class FavoriteSerializer(serializers.ModelSerializer):
-    image = Base64ImageField()
-
-    class Meta:
-        fields = 'id', 'name', 'image', 'cooking_time'
-        model = Recipe
+    def get_recipes(self, obj):
+        recipes = obj.recipes.all()[:self.context.get('recipes_limit')]
+        return SubscriptionRecipeSerializer(recipes, many=True).data
