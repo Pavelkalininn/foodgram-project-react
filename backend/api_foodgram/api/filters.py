@@ -6,6 +6,7 @@ FILTER_CHOICES = (
     (1, True),
     (0, False)
 )
+FLAG_ON = '1'
 
 
 class RecipeFilter(django_filters.FilterSet):
@@ -34,11 +35,11 @@ class RecipeFilter(django_filters.FilterSet):
         fields = ('tags', 'author', 'is_in_shopping_cart', 'is_favorited')
 
     def is_in_shopping_cart_filter(self, queryset, name, value):
-        if int(value):
+        if value == FLAG_ON:
             queryset = queryset.filter(cart__author=self.request.user.id)
         return queryset
 
     def is_favorited_filter(self, queryset, name, value):
-        if int(value):
+        if value == FLAG_ON:
             queryset = queryset.filter(favorite__author=self.request.user.id)
         return queryset

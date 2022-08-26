@@ -1,7 +1,7 @@
-from dotenv import load_dotenv
-
 import os
 from pathlib import Path
+
+from dotenv import load_dotenv
 
 load_dotenv()
 
@@ -70,6 +70,13 @@ DATABASES = {
     }
 }
 
+# DATABASES = {
+#     'default': {
+#         'ENGINE': 'django.db.backends.sqlite3',
+#         'NAME': BASE_DIR / 'db.sqlite3',
+#         }
+# }
+
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -118,5 +125,7 @@ ID_NOT_FOUND = 'Не найден {name} с таким id'
 ALREADY_CREATED = 'У вас уже есть {name} с таким названием'
 COOKING_TIME_LIMIT = 'Введите время приготовления от 1 до 1000'
 IS_A_POSITIVE_INT = 'Параметр {name} должен быть положительной цифрой.'
-HAVE_NOT_OBJECT_FOR_DELETE = '{name} уже отменена'
-DELETE_SUCCESS = '{name} успешно отменена'
+HAVE_NOT_OBJECT_FOR_DELETE = '{name} уже отменен(а)'
+DELETE_SUCCESS = '{name} успешно отменен(а)'
+FRIENDLY_FIRE = 'Нельзя подписываться на самого себя'
+UNIQUE_TOGETHER_EXCEPTION = 'Получено два одинаковых объекта {name}'

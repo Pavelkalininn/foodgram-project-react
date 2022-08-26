@@ -160,4 +160,9 @@ class Migration(migrations.Migration):
             model_name='favorite',
             constraint=models.UniqueConstraint(fields=('author', 'recipe'), name='unique_favorite'),
         ),
+        migrations.AddConstraint(
+            model_name='recipe',
+            constraint=models.UniqueConstraint(fields=('name', 'author'),
+                                               name='unique_recipe'),
+        ),
     ]

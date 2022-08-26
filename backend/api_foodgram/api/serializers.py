@@ -1,8 +1,13 @@
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.exceptions import ValidationError
+from rest_framework.generics import get_object_or_404
+from rest_framework.permissions import SAFE_METHODS
 
 from api_foodgram.settings import (ALREADY_CREATED, COOKING_TIME_LIMIT,
-                                   ID_NOT_FOUND)
+                                   FRIENDLY_FIRE, HAVE_NOT_OBJECT_FOR_DELETE,
+                                   ID_NOT_FOUND, IS_A_POSITIVE_INT,
+                                   UNIQUE_TOGETHER_EXCEPTION)
 from recipes.models import (Favorite, Ingredient, IngredientName, Recipe,
                             ShoppingCart, Subscription, Tag, User)
 
@@ -29,12 +34,10 @@ class UserSerializer(serializers.ModelSerializer):
         fields = parent_fields
 
     def get_is_subscribed(self, obj):
-        if Subscription.objects.filter(
-                user=obj.id,
-                author=self.context.get('request').user.id
-        ).exists():
-            return True
-        return False
+        return Subscription.objects.filter(
+            user=obj.id,
+            author=self.context.get('request').user.id
+        ).exists()
 
 
 class TagSerializer(serializers.ModelSerializer):
@@ -64,7 +67,18 @@ class IngredientSerializer(serializers.ModelSerializer):
         return obj.ingredient_name.measurement_unit
 
 
-class RecipeSerializer(serializers.ModelSerializer):
+class IngredientCreateSerializer(serializers.ModelSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=IngredientName.objects.all(),
+    )
+    amount = serializers.IntegerField()
+
+    class Meta:
+        fields = 'id', 'amount'
+        model = Ingredient
+
+
+class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(max_length=None, use_url=True)
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
@@ -88,6 +102,20 @@ class RecipeSerializer(serializers.ModelSerializer):
             recipe=obj.id
         ).exists()
 
+
+class RecipeCreateSerializer(serializers.ModelSerializer):
+    image = Base64ImageField(max_length=None, use_url=True)
+    tags = serializers.PrimaryKeyRelatedField(
+        queryset=Tag.objects.all(),
+        many=True
+    )
+    author = UserSerializer(default=serializers.CurrentUserDefault())
+    ingredients = IngredientCreateSerializer(many=True)
+
+    class Meta:
+        fields = '__all__'
+        model = Recipe
+
     def validate_cooking_time(self, value):
         if value not in range(1, 1000):
             raise serializers.ValidationError(
@@ -95,35 +123,94 @@ class RecipeSerializer(serializers.ModelSerializer):
             )
         return value
 
+    def validate_tags(self, value):
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError(
+                UNIQUE_TOGETHER_EXCEPTION.format(name='тэг')
+            )
+        return value
+
+    def validate_ingredients(self, value):
+        if len(set(value)) != len(value):
+            raise serializers.ValidationError(
+                UNIQUE_TOGETHER_EXCEPTION.format(name='ингредиент')
+            )
+        ingredient_ids = [
+            ingredient.get('id').id
+            for ingredient in value
+        ]
+        if IngredientName.objects.filter(
+                id__in=ingredient_ids
+        ).count() != len(value):
+            raise serializers.ValidationError(
+                ID_NOT_FOUND.format(name='ингредиент')
+            )
+        return value
+
     def validate(self, obj):
         request = self.context.get('request')
-        data = request.data
-        tag_ids = data.get('tags')
-        ingredient_ids = [
-            ingredient.get('id')
-            for ingredient in data.get('ingredients')
-        ]
-        if (
-                Tag.objects.filter(id__in=tag_ids).count() != len(tag_ids)
-                or IngredientName.objects.filter(
-                id__in=ingredient_ids).count() != len(ingredient_ids)
-        ):
-            raise serializers.ValidationError(
-                ID_NOT_FOUND.format('тэг')
-            )
-
-        if request.method == 'PATCH':
-            if Recipe.objects.filter(
-                    author=request.user,
-                    name=data.get('name')
-            ).exists():
-                raise serializers.ValidationError(
-                    ALREADY_CREATED.format('рецепт')
-                )
+        if request.method not in SAFE_METHODS:
+            if obj.get('name'):
+                if Recipe.objects.filter(
+                        author=request.user,
+                        name=obj.get('name')
+                ).exists():
+                    raise serializers.ValidationError(
+                        ALREADY_CREATED.format(name='рецепт')
+                    )
         return obj
 
+    def ingredients_create(self, ingredients_data):
+        ingredients = []
+        for ingredient in ingredients_data:
+            ingredient_name = get_object_or_404(
+                IngredientName,
+                id=ingredient.get('id').id
+            )
+            # ingredient = Ingredient(
+            #     ingredient_name=ingredient_name,
+            #     amount=ingredient.get('amount')
+            # )
+            ingredient, _ = Ingredient.objects.get_or_create(
+                ingredient_name=ingredient_name,
+                amount=ingredient.get('amount'),
+            )
+            ingredients.append(ingredient)
+        # ingredients = Ingredient.objects.bulk_create(ingredients)
 
-class SubscriptionRecipeSerializer(RecipeSerializer):
+        # bulk_create не возвращает id ингредиента, а он мне нужен для
+        # создания рецепта, поэтому применять bulk_create тут не целесообразно
+        return ingredients
+
+    def create(self, validated_data):
+        tags = validated_data.pop('tags')
+        ingredients = validated_data.pop('ingredients')
+        recipe = Recipe.objects.create(**validated_data)
+        recipe.tags.set(tags)
+        ingredients = self.ingredients_create(ingredients)
+        recipe.ingredients.set(ingredients)
+        return recipe
+
+    def update(self, instance, validated_data):
+        instance.tags.clear()
+        tags = validated_data.pop('tags')
+        instance.tags.set(tags)
+        ingredients = validated_data.pop('ingredients')
+        instance.ingredients.clear()
+        ingredients = self.ingredients_create(ingredients)
+        instance.ingredients.set(ingredients)
+        return super().update(
+            instance,
+            validated_data
+        )
+
+    def to_representation(self, instance):
+        request = self.context.get('request')
+        context = {'request': request}
+        return RecipeReadSerializer(instance, context=context).data
+
+
+class SubscriptionRecipeSerializer(RecipeReadSerializer):
     class Meta:
         fields = 'id', 'name', 'image', 'cooking_time'
         model = Recipe
@@ -152,3 +239,85 @@ class SubscriptionSerializer(UserSerializer):
     def get_recipes(self, obj):
         recipes = obj.recipes.all()[:self.context.get('recipes_limit')]
         return SubscriptionRecipeSerializer(recipes, many=True).data
+
+
+class SubscriptionCreateSerializer(SubscriptionSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    user = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+
+    class Meta:
+        fields = 'id', 'author', 'user'
+        model = User
+
+    def validate(self, obj):
+        author = obj.get('author')
+        user = obj.get('user')
+        request = self.context.get('request')
+        if author == user:
+            raise ValidationError(FRIENDLY_FIRE)
+        subscription_exists = Subscription.objects.filter(
+            author=author,
+            user=user
+        ).exists()
+        if request.method == "POST":
+            if subscription_exists:
+                raise ValidationError(
+                    ALREADY_CREATED.format(name='подписчик')
+                )
+        else:
+            if not subscription_exists:
+                raise ValidationError(
+                    {'errors': HAVE_NOT_OBJECT_FOR_DELETE.format(
+                        name='Подписка')
+                    }
+                )
+        return obj
+
+
+class SubscriptionsGetSerializer(SubscriptionSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipes_limit = serializers.IntegerField(allow_null=True)
+
+    class Meta:
+        fields = 'id', 'author', 'recipes_limit'
+        model = User
+
+    def validate_recipes_limit(self, value):
+        if value <= 0:
+            raise ValidationError(
+                IS_A_POSITIVE_INT.format(name='recipes_limit')
+            )
+        return value
+
+
+class ShoppingCartSerializer(serializers.ModelSerializer):
+    author = serializers.PrimaryKeyRelatedField(queryset=User.objects.all())
+    recipe = serializers.PrimaryKeyRelatedField(queryset=Recipe.objects.all())
+
+    class Meta:
+        fields = 'author', 'recipe'
+        model = ShoppingCart
+
+    def validate(self, obj):
+        author = obj.get('author')
+        recipe = obj.get('recipe')
+        model_class = self.context.get('model_class')
+        request = self.context.get('request')
+        if request.method == 'POST':
+            if model_class.objects.filter(
+                    author=author,
+                    recipe=recipe
+            ).exists():
+                raise ValidationError(
+                    ALREADY_CREATED.format(name='рецепт')
+                )
+        else:
+            if not model_class.objects.filter(
+                    author=author,
+                    recipe=recipe
+            ).exists():
+                raise ValidationError(
+                    {'errors': HAVE_NOT_OBJECT_FOR_DELETE.format(name='Рецепт')
+                     }
+                )
+        return obj
