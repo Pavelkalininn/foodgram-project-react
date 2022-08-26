@@ -9,7 +9,7 @@ from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
-from api.filters import RecipeFilter
+from api.filters import RecipeFilter, IngredientSearchFilter
 from api.paginations import LargeResultsSetPagination
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (IngredientNameSerializer, RecipeCreateSerializer,
@@ -46,10 +46,6 @@ class UserViewSet(
         return subscriptions
 
     def get_serializer_class(self):
-        if self.action == 'subscriptions':
-            return SubscriptionSerializer
-        if self.action == 'subscribe':
-            return SubscriptionsGetSerializer
         if self.request.method == 'POST':
             return UserCreateSerializer
         return UserSerializer
@@ -72,7 +68,7 @@ class UserViewSet(
         serializer.is_valid(raise_exception=True)
         if self.request.method == "POST":
             Subscription.objects.create(**serializer.validated_data)
-            serializer = self.get_serializer_class()(
+            serializer = SubscriptionsGetSerializer(
                 self.get_queryset(),
                 context={"request": request},
                 many=True
@@ -91,7 +87,7 @@ class UserViewSet(
     @action(
         methods=['get'],
         detail=False,
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated, ]
     )
     def subscriptions(self, request):
         context = {"request": request}
@@ -106,12 +102,13 @@ class UserViewSet(
         recipes_limit = serializer.validated_data.get('recipes_limit')
         if recipes_limit:
             context['recipes_limit'] = recipes_limit
-        input_serializer = self.get_serializer(
-            self.get_queryset(),
+        pages = self.paginate_queryset(self.get_queryset())
+        input_serializer = SubscriptionSerializer(
+            pages,
             context=context,
             many=True
         )
-        return Response(input_serializer.data)
+        return self.get_paginated_response(input_serializer.data)
 
     @action(
         methods=['get'],
@@ -186,7 +183,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=(IsAuthenticated,),
         detail=False
     )
-    def get_shopping_cart(self, request):
+    def download_shopping_cart(self, request):
         return HttpResponse(
             shopping_cart_data_creator(request.user),
             headers={
@@ -223,7 +220,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
 
 class IngredientViewSet(viewsets.ModelViewSet):
+    pagination_class = None
     queryset = IngredientName.objects.all()
     serializer_class = IngredientNameSerializer
-    filter_backends = (filters.SearchFilter,)
+    filter_backends = (IngredientSearchFilter,)
     search_fields = ('^name',)

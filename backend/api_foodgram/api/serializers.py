@@ -117,24 +117,13 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         model = Recipe
 
     def validate_cooking_time(self, value):
-        if value not in range(1, 1000):
+        if value <= 0:
             raise serializers.ValidationError(
-                COOKING_TIME_LIMIT
-            )
-        return value
-
-    def validate_tags(self, value):
-        if len(set(value)) != len(value):
-            raise serializers.ValidationError(
-                UNIQUE_TOGETHER_EXCEPTION.format(name='тэг')
+                IS_A_POSITIVE_INT.format(name='время приготовления')
             )
         return value
 
     def validate_ingredients(self, value):
-        if len(set(value)) != len(value):
-            raise serializers.ValidationError(
-                UNIQUE_TOGETHER_EXCEPTION.format(name='ингредиент')
-            )
         ingredient_ids = [
             ingredient.get('id').id
             for ingredient in value
@@ -167,19 +156,19 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 IngredientName,
                 id=ingredient.get('id').id
             )
-            # ingredient = Ingredient(
-            #     ingredient_name=ingredient_name,
-            #     amount=ingredient.get('amount')
-            # )
             ingredient, _ = Ingredient.objects.get_or_create(
                 ingredient_name=ingredient_name,
                 amount=ingredient.get('amount'),
             )
             ingredients.append(ingredient)
-        # ingredients = Ingredient.objects.bulk_create(ingredients)
-
-        # bulk_create не возвращает id ингредиента, а он мне нужен для
-        # создания рецепта, поэтому применять bulk_create тут не целесообразно
+        # Для many to many мне нужно добавлять ингредиент через set,
+        # а тут мне никто не возвращает id для такой привязки.
+        # Привязать параметр recipes при создании объекта класса мне тоже не
+        # позволяет, указывая на необходимость привязки параметра many to many
+        # через set.
+        # Если не привязывать ingredients к рецепту они, соответственно, не
+        # привязываются.
+        # Отдельной таблицы связывающей ингредиенты и рецепты у меня нет
         return ingredients
 
     def create(self, validated_data):
@@ -283,7 +272,7 @@ class SubscriptionsGetSerializer(SubscriptionSerializer):
         model = User
 
     def validate_recipes_limit(self, value):
-        if value <= 0:
+        if value and value <= 0:
             raise ValidationError(
                 IS_A_POSITIVE_INT.format(name='recipes_limit')
             )

@@ -1,4 +1,5 @@
 import django_filters
+from rest_framework.filters import SearchFilter
 
 from recipes.models import Recipe, Tag
 
@@ -43,3 +44,7 @@ class RecipeFilter(django_filters.FilterSet):
         if value == FLAG_ON:
             queryset = queryset.filter(favorite__author=self.request.user.id)
         return queryset
+
+
+class IngredientSearchFilter(SearchFilter):
+    search_param = 'name'
