@@ -1,6 +1,8 @@
 # Foodgram - социальная сеть для обмена рецептами
 
-Доступен по адресу https://diploma.sytes.net/
+![Workflow](https://github.com/Pavelkalininn/foodgram-project-react/actions/workflows/main.yml/badge.svg)
+
+Доступен по адресу http://diploma.sytes.net/
 Для входа под одним из трех предзаполненых аккаунтов необходимо ввести следующие данные:
 id | почта          | пароль
 1  | m@ya.ru        | Guguruge 
@@ -33,6 +35,33 @@ id | почта          | пароль
     pytest==6.2.4
     pytest-django==4.4.0
 
+## Шаблон наполнения env-файла лежит по адресу: 
+
+[infra/example.env](./infra/example.env)
+
+## Запуск проекта:
+
+### Для запуска проекта, применения миграций, создания суперюзера, загрузки статики и добавления в БД данных из фикстур соответственно необходимо в папке infra выполнить команды:
+    
+    docker-compose up -d --build
+    sudo docker-compose exec backend python manage.py migrate
+    sudo docker-compose exec backend python manage.py createsuperuser
+    sudo docker-compose exec backend python manage.py collectstatic --no-input
+    sudo docker-compose exec backend python manage.py loaddata ingredient.json
+
+после чего будет собран и запущен контейнер, админка доступна по адресу:  
+
+    /admin/
+
+
+для остановки контейнера необходимо в папке infra выполнить:
+
+     docker-compose down -v
+
+
+## Документация с примерами запросов API доступна по адресу:
+
+    /api/docs/
 
 
 Автор: [__Паша Калинин__](https://github.com/Pavelkalininn)
