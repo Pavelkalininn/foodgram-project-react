@@ -1,12 +1,21 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin
 
-from .models import (Favorite, Ingredient, IngredientName, Recipe,
-                     ShoppingCart, Subscription, Tag, User)
+from .models import (
+    Favorite,
+    Ingredient,
+    IngredientName,
+    Recipe,
+    ShoppingCart,
+    Subscription,
+    Tag,
+    User
+)
 
 EMPTY_VALUE = 'значение не задано'
 
 
-class UserAdmin(admin.ModelAdmin):
+class CustomUserAdmin(UserAdmin):
     search_fields = ('username', 'email', 'first_name')
     list_filter = ('username', 'email', 'first_name')
     empty_value_display = EMPTY_VALUE
@@ -42,4 +51,4 @@ admin.site.register(Recipe, RecipeAdmin)
 admin.site.register(Favorite)
 admin.site.register(ShoppingCart)
 admin.site.register(Subscription)
-admin.site.register(User, UserAdmin)
+admin.site.register(User, CustomUserAdmin)

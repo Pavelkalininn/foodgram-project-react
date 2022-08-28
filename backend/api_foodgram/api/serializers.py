@@ -1,18 +1,32 @@
+from django.contrib.auth import get_user_model
+from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import SAFE_METHODS
 
-from api_foodgram.settings import (ALREADY_CREATED, COOKING_TIME_LIMIT,
-                                   FRIENDLY_FIRE, HAVE_NOT_OBJECT_FOR_DELETE,
-                                   ID_NOT_FOUND, IS_A_POSITIVE_INT,
-                                   UNIQUE_TOGETHER_EXCEPTION)
-from recipes.models import (Favorite, Ingredient, IngredientName, Recipe,
-                            ShoppingCart, Subscription, Tag, User)
+from api_foodgram.settings import (
+    ALREADY_CREATED,
+    FRIENDLY_FIRE,
+    HAVE_NOT_OBJECT_FOR_DELETE,
+    ID_NOT_FOUND,
+    IS_A_POSITIVE_INT
+)
+from recipes.models import (
+    Favorite,
+    Ingredient,
+    IngredientName,
+    Recipe,
+    ShoppingCart,
+    Subscription,
+    Tag
+)
+
+User = get_user_model()
 
 
-class UserCreateSerializer(serializers.ModelSerializer):
+class DjoserUserCreateSerializer(UserSerializer):
     class Meta:
         model = User
         fields = [
@@ -24,12 +38,12 @@ class UserCreateSerializer(serializers.ModelSerializer):
         ]
 
 
-class UserSerializer(serializers.ModelSerializer):
+class DjoserUserSerializer(DjoserUserCreateSerializer):
     is_subscribed = serializers.SerializerMethodField(read_only=True)
 
     class Meta:
         model = User
-        parent_fields = list(UserCreateSerializer.Meta.fields)
+        parent_fields = list(DjoserUserCreateSerializer.Meta.fields)
         parent_fields.append('is_subscribed')
         fields = parent_fields
 
@@ -161,14 +175,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
                 amount=ingredient.get('amount'),
             )
             ingredients.append(ingredient)
-        # Для many to many мне нужно добавлять ингредиент через set,
-        # а тут мне никто не возвращает id для такой привязки.
-        # Привязать параметр recipes при создании объекта класса мне тоже не
-        # позволяет, указывая на необходимость привязки параметра many to many
-        # через set.
-        # Если не привязывать ingredients к рецепту они, соответственно, не
-        # привязываются.
-        # Отдельной таблицы связывающей ингредиенты и рецепты у меня нет
         return ingredients
 
     def create(self, validated_data):
@@ -205,7 +211,7 @@ class SubscriptionRecipeSerializer(RecipeReadSerializer):
         model = Recipe
 
 
-class SubscriptionSerializer(UserSerializer):
+class SubscriptionSerializer(DjoserUserSerializer):
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
 

@@ -1,36 +1,47 @@
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, status, viewsets
+from djoser.views import UserViewSet
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
-from rest_framework.mixins import (CreateModelMixin, ListModelMixin,
-                                   RetrieveModelMixin)
-from rest_framework.permissions import SAFE_METHODS, AllowAny, IsAuthenticated
+from rest_framework.mixins import (
+    ListModelMixin,
+    RetrieveModelMixin
+)
+from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
 
 from api.filters import RecipeFilter, IngredientSearchFilter
 from api.paginations import LargeResultsSetPagination
 from api.permissions import AuthorOrReadOnly
-from api.serializers import (IngredientNameSerializer, RecipeCreateSerializer,
-                             RecipeReadSerializer, ShoppingCartSerializer,
-                             SubscriptionCreateSerializer,
-                             SubscriptionRecipeSerializer,
-                             SubscriptionSerializer,
-                             SubscriptionsGetSerializer, TagSerializer,
-                             UserCreateSerializer, UserSerializer)
+from api.serializers import (
+    IngredientNameSerializer,
+    RecipeCreateSerializer,
+    RecipeReadSerializer,
+    ShoppingCartSerializer,
+    SubscriptionCreateSerializer,
+    SubscriptionRecipeSerializer,
+    SubscriptionSerializer,
+    SubscriptionsGetSerializer,
+    TagSerializer,
+    DjoserUserCreateSerializer,
+    DjoserUserSerializer
+)
 from api.utils import shopping_cart_data_creator
 from api_foodgram.settings import DELETE_SUCCESS
-from recipes.models import (Favorite, IngredientName, Recipe, ShoppingCart,
-                            Subscription, Tag, User)
+from recipes.models import (
+    Favorite,
+    IngredientName,
+    Recipe,
+    ShoppingCart,
+    Subscription,
+    Tag,
+    User
+)
 
 
-class UserViewSet(
-    CreateModelMixin,
-    ListModelMixin,
-    RetrieveModelMixin,
-    GenericViewSet,
-):
+class DjoserUserViewSet(UserViewSet):
     pagination_class = LargeResultsSetPagination
 
     def get_queryset(self):
@@ -46,14 +57,12 @@ class UserViewSet(
         return subscriptions
 
     def get_serializer_class(self):
-        if self.request.method == 'POST':
-            return UserCreateSerializer
-        return UserSerializer
-
-    def get_permissions(self):
-        if self.kwargs.get('pk'):
-            return (IsAuthenticated(),)
-        return (AllowAny(),)
+        is_custom_action = self.action in ('subscriptions', 'subscribe', 'me')
+        if self.request.method == 'POST' and is_custom_action:
+            return DjoserUserCreateSerializer
+        if is_custom_action:
+            return DjoserUserSerializer
+        return super().get_serializer_class()
 
     @action(
         methods=['POST', 'DELETE'],

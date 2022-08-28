@@ -14,7 +14,7 @@ class RecipeFilter(django_filters.FilterSet):
     tags = django_filters.ModelMultipleChoiceFilter(
         queryset=Tag.objects.all(),
         field_name='tags__slug',
-        to_field_name='slug',
+        to_field_name='slug'
     )
     author = django_filters.CharFilter(
         field_name='author',
