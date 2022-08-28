@@ -51,15 +51,15 @@ class DjoserUserViewSet(UserViewSet):
         detail=True,
         permission_classes=[IsAuthenticated]
     )
-    def subscribe(self, request, pk):
+    def subscribe(self, request, id):
         serializer = SubscriptionCreateSerializer(
-            data={'user': pk, 'author': request.user.pk},
+            data={'user': id, 'author': request.user.pk},
             context={'request': request}
         )
         serializer.is_valid(raise_exception=True)
         if self.request.method == "POST":
             Subscription.objects.create(**serializer.validated_data)
-            serializer = SubscriptionsGetSerializer(
+            serializer = SubscriptionSerializer(
                 self.get_queryset(),
                 context={"request": request},
                 many=True
@@ -76,7 +76,7 @@ class DjoserUserViewSet(UserViewSet):
         )
 
     @action(
-        methods=['get'],
+        methods=['GET'],
         detail=False,
         permission_classes=[IsAuthenticated, ]
     )
