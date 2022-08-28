@@ -21,7 +21,6 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
 from api_foodgram.settings import DELETE_SUCCESS
 
 
@@ -35,10 +34,9 @@ class DjoserUserViewSet(UserViewSet):
             User,
             id=self.request.user.pk
         )
-        subscriptions = [
+        return [
             sub.user for sub in user.subscription_from_author.all()
         ]
-        return subscriptions
 
     def get_serializer_class(self):
         is_custom_action = self.action in ('subscriptions', 'subscribe', 'me')

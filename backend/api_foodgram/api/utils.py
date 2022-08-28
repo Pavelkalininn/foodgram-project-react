@@ -4,10 +4,10 @@ def shopping_cart_data_creator(user):
     for cart_objects in user.cart.all():
         for ingredient in cart_objects.recipe.ingredients.all():
             key = (
-                    ingredient.ingredient_name.name
-                    + ' ('
-                    + ingredient.ingredient_name.measurement_unit
-                    + ')'
+                ingredient.ingredient_name.name
+                + ' ('
+                + ingredient.ingredient_name.measurement_unit
+                + ')'
             )
             if key in ingredients_count:
                 ingredients_count[key] += ingredient.amount

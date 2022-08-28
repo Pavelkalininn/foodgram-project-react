@@ -36,12 +36,12 @@ class RecipeFilter(django_filters.FilterSet):
 
     def is_in_shopping_cart_filter(self, queryset, name, value):
         if value == FLAG_ON:
-            queryset = queryset.filter(cart__author=self.request.user.id)
+            return queryset.filter(cart__author=self.request.user.id)
         return queryset
 
     def is_favorited_filter(self, queryset, name, value):
         if value == FLAG_ON:
-            queryset = queryset.filter(favorite__author=self.request.user.id)
+            return queryset.filter(favorite__author=self.request.user.id)
         return queryset
 
 

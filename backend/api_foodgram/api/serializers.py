@@ -7,7 +7,6 @@ from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import SAFE_METHODS
-
 from api_foodgram.settings import (ALREADY_CREATED, FRIENDLY_FIRE,
                                    HAVE_NOT_OBJECT_FOR_DELETE, ID_NOT_FOUND,
                                    IS_A_POSITIVE_INT)
@@ -253,7 +252,7 @@ class SubscriptionCreateSerializer(SubscriptionSerializer):
                 raise ValidationError(
                     {'errors': HAVE_NOT_OBJECT_FOR_DELETE.format(
                         name='Подписка')
-                    }
+                     }
                 )
         return obj
 
