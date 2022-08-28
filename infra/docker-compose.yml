@@ -9,8 +9,7 @@ services:
       - ./.env
 
   backend:
-    build:
-      context: ../backend/api_foodgram/
+    image: ${DOCKER_USERNAME}/diploma_back:v1.0
     restart: always
     volumes:
       - static_value:/app/static/
@@ -21,9 +20,7 @@ services:
       - ./.env
 
   frontend:
-    build:
-      context: ../frontend
-      dockerfile: Dockerfile
+    image: ${DOCKER_USERNAME}/diploma_front:v1.0
     volumes:
       - ../frontend/:/app/result_build/
 
