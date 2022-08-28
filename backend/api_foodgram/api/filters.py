@@ -1,7 +1,6 @@
 import django_filters
-from rest_framework.filters import SearchFilter
-
 from recipes.models import Recipe, Tag
+from rest_framework.filters import SearchFilter
 
 FILTER_CHOICES = (
     (1, True),

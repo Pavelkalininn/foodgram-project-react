@@ -1,16 +1,8 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
 
-from .models import (
-    Favorite,
-    Ingredient,
-    IngredientName,
-    Recipe,
-    ShoppingCart,
-    Subscription,
-    Tag,
-    User
-)
+from .models import (Favorite, Ingredient, IngredientName, Recipe,
+                     ShoppingCart, Subscription, Tag, User)
 
 EMPTY_VALUE = 'значение не задано'
 
