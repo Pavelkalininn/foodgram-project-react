@@ -9,6 +9,7 @@ from api.serializers import (DjoserUserCreateSerializer, DjoserUserSerializer,
                              SubscriptionSerializer,
                              SubscriptionsGetSerializer, TagSerializer)
 from api.utils import shopping_cart_data_creator
+from api_foodgram.settings import DELETE_SUCCESS
 from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from djoser.views import UserViewSet
@@ -21,8 +22,6 @@ from rest_framework.mixins import ListModelMixin, RetrieveModelMixin
 from rest_framework.permissions import SAFE_METHODS, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import GenericViewSet
-
-from api_foodgram.settings import DELETE_SUCCESS
 
 
 class DjoserUserViewSet(UserViewSet):

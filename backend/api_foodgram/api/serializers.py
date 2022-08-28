@@ -3,14 +3,14 @@ from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
 from recipes.models import (Favorite, Ingredient, IngredientName, Recipe,
                             ShoppingCart, Subscription, Tag)
+from api_foodgram.settings import (ALREADY_CREATED, FRIENDLY_FIRE,
+                                   HAVE_NOT_OBJECT_FOR_DELETE, ID_NOT_FOUND,
+                                   IS_A_POSITIVE_INT)
 from rest_framework import serializers
 from rest_framework.exceptions import ValidationError
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import SAFE_METHODS
 
-from api_foodgram.settings import (ALREADY_CREATED, FRIENDLY_FIRE,
-                                   HAVE_NOT_OBJECT_FOR_DELETE, ID_NOT_FOUND,
-                                   IS_A_POSITIVE_INT)
 
 User = get_user_model()
 
