@@ -141,7 +141,7 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
     def validate(self, obj):
         request = self.context.get('request')
         if request.method not in SAFE_METHODS:
-            if obj.get('name'):
+            if obj.get('name') and request.method == 'POST':
                 if Recipe.objects.filter(
                         author=request.user,
                         name=obj.get('name')

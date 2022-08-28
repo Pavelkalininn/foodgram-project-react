@@ -9,7 +9,7 @@ services:
       - ./.env
 
   backend:
-    image: ${DOCKER_USERNAME}/diploma_back:v1.0
+    image: ${DOCKER_USERNAME}/diploma_back:v1.2
     restart: always
     volumes:
       - static_value:/app/static/
@@ -20,7 +20,7 @@ services:
       - ./.env
 
   frontend:
-    image: ${DOCKER_USERNAME}/diploma_front:v1.0
+    image: ${DOCKER_USERNAME}/diploma_front:v1.2
     volumes:
       - ../frontend/:/app/result_build/
 
