@@ -41,6 +41,10 @@ MIDDLEWARE = [
 
 ROOT_URLCONF = 'api_foodgram.urls'
 
+CSRF_COOKIE_DOMAIN = 'diploma.sytes.net'
+CSRF_TRUSTED_ORIGINS = ['diploma.sytes.net']
+
+
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
