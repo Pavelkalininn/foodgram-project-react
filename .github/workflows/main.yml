@@ -43,14 +43,14 @@ jobs:
         with:
           push: true
           context: backend/api_foodgram/
-          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_back:v1.5
+          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_back:v1.6
 
       - name: Push frontend to Docker Hub
         uses: docker/build-push-action@v2
         with:
           push: true
           context: frontend
-          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_front:v1.3
+          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_front:v1.4
 
   deploy:
     runs-on: ubuntu-latest

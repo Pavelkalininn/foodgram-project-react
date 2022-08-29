@@ -10,9 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: ${DOCKER_USERNAME}/diploma_back:v1.5
-#    build:
-#      context: ../backend/api_foodgram/
+    image: ${DOCKER_USERNAME}/diploma_back:v1.6
     restart: always
     volumes:
       - ../docs/:/app/api/docs/
@@ -24,7 +22,7 @@ services:
       - ./.env
 
   frontend:
-    image: ${DOCKER_USERNAME}/diploma_front:v1.3
+    image: ${DOCKER_USERNAME}/diploma_front:v1.4
     restart: always
     volumes:
       - ../frontend/:/app/result_build/
