@@ -39,7 +39,7 @@
 ## Шаблон наполнения env-файла лежит по адресу: 
 
 [infra/example.env](./infra/example.env)
-Для запуска CI необходимо наличие переменной DOCKER_USERNAME в окружении Github secrets
+Для запуска CI необходимо наличие переменной DOCKER_USERNAME=guguruge в окружении Github secrets
 
 ## Запуск проекта:
 
