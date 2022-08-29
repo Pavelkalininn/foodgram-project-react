@@ -2,7 +2,7 @@
 
 ![Workflow](https://github.com/Pavelkalininn/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-Доступен по адресу http://diploma.sytes.net/ Закончился пробный период )
+Доступен по адресу http://diploma.sytes.net/ Закончился пробный период (у Яндекс облака)
 Для входа под одним из трех предзаполненых аккаунтов необходимо ввести следующие данные:
 
     id | почта          | пароль
