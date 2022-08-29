@@ -2,12 +2,13 @@
 
 ![Workflow](https://github.com/Pavelkalininn/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-Доступен по адресу http://diploma.sytes.net/
+Доступен по адресу http://diploma.sytes.net/ Закончился пробный период )
 Для входа под одним из трех предзаполненых аккаунтов необходимо ввести следующие данные:
-id | почта          | пароль
-1  | m@ya.ru        | Guguruge 
-2  | first@user.ru  | Guguruge
-3  | second@user.ru | Guguruge
+
+    id | почта          | пароль
+    1  | m@ya.ru        | Guguruge 
+    2  | first@user.ru  | Guguruge
+    3  | second@user.ru | Guguruge
 
 ## Описание
 
@@ -38,6 +39,7 @@ id | почта          | пароль
 ## Шаблон наполнения env-файла лежит по адресу: 
 
 [infra/example.env](./infra/example.env)
+Для запуска CI необходимо наличие переменной DOCKER_USERNAME в окружении Github secrets
 
 ## Запуск проекта:
 

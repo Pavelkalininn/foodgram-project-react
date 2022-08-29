@@ -3,8 +3,9 @@ services:
 
   db:
     image: postgres:13.0-alpine
+    restart: always
     volumes:
-      - postgres_data /var/lib/postgresql/data/
+      - postgres_data:/var/lib/postgresql/data/
     env_file:
       - ./.env
 
@@ -21,11 +22,13 @@ services:
 
   frontend:
     image: ${DOCKER_USERNAME}/diploma_front:v1.3
+    restart: always
     volumes:
       - ../frontend/:/app/result_build/
 
   nginx:
     image: nginx:1.19.3
+    restart: always
     ports:
       - "80:80"
     volumes:
