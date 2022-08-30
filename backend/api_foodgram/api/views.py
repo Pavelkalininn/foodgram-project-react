@@ -26,6 +26,7 @@ from rest_framework.viewsets import GenericViewSet
 
 class DjoserUserViewSet(UserViewSet):
     pagination_class = LargeResultsSetPagination
+    permission_classes = [AuthorOrReadOnly, ]
 
     def get_queryset(self):
         if self.action not in ('subscriptions', 'subscribe'):
