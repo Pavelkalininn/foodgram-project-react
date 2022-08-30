@@ -1,6 +1,6 @@
 from api_foodgram.settings import (ALREADY_CREATED, FRIENDLY_FIRE,
                                    HAVE_NOT_OBJECT_FOR_DELETE, ID_NOT_FOUND,
-                                   IS_A_POSITIVE_INT)
+                                   IS_A_POSITIVE_INT, NOT_NULL_PARAMETER)
 from django.contrib.auth import get_user_model
 from djoser.serializers import UserSerializer
 from drf_extra_fields.fields import Base64ImageField
@@ -130,11 +130,22 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
             ingredient.get('id').id
             for ingredient in value
         ]
+        if not len(value):
+            raise serializers.ValidationError(
+                NOT_NULL_PARAMETER.format(name='ингредиент')
+            )
         if IngredientName.objects.filter(
                 id__in=ingredient_ids
         ).count() != len(value):
             raise serializers.ValidationError(
                 ID_NOT_FOUND.format(name='ингредиент')
+            )
+        return value
+
+    def validate_tags(self, value):
+        if not len(value):
+            raise serializers.ValidationError(
+                NOT_NULL_PARAMETER.format(name='таг')
             )
         return value
 

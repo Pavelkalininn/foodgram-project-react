@@ -1,4 +1,4 @@
-from api.filters import IngredientSearchFilter, RecipeFilter
+from api.filters import NameFilter, RecipeFilter
 from api.paginations import LargeResultsSetPagination
 from api.permissions import AuthorOrReadOnly
 from api.serializers import (DjoserUserCreateSerializer, DjoserUserSerializer,
@@ -26,7 +26,7 @@ from rest_framework.viewsets import GenericViewSet
 
 class DjoserUserViewSet(UserViewSet):
     pagination_class = LargeResultsSetPagination
-    permission_classes = [AuthorOrReadOnly, ]
+    permission_classes = [IsAuthenticated, ]
 
     def get_queryset(self):
         if self.action not in ('subscriptions', 'subscribe'):
@@ -43,14 +43,14 @@ class DjoserUserViewSet(UserViewSet):
         is_custom_action = self.action in ('subscriptions', 'subscribe', 'me')
         if self.request.method == 'POST' and is_custom_action:
             return DjoserUserCreateSerializer
-        if is_custom_action:
+        if is_custom_action or self.request.method == 'GET':
             return DjoserUserSerializer
         return super().get_serializer_class()
 
     @action(
         methods=['POST', 'DELETE'],
         detail=True,
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated, ]
     )
     def subscribe(self, request, id):
         serializer = SubscriptionCreateSerializer(
@@ -105,7 +105,7 @@ class DjoserUserViewSet(UserViewSet):
     @action(
         methods=['get'],
         detail=False,
-        permission_classes=[IsAuthenticated]
+        permission_classes=[IsAuthenticated, ]
     )
     def me(self, request):
         user = get_object_or_404(User, username=request.user.username)
@@ -215,5 +215,6 @@ class IngredientViewSet(viewsets.ModelViewSet):
     pagination_class = None
     queryset = IngredientName.objects.all()
     serializer_class = IngredientNameSerializer
-    filter_backends = (IngredientSearchFilter,)
-    search_fields = ('^name',)
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = NameFilter
+    filterset_fields = ('name', )

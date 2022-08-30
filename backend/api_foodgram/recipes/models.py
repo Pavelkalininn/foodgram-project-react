@@ -43,7 +43,7 @@ class IngredientName(models.Model):
     )
 
     class Meta:
-        ordering = ('-id',)
+        ordering = ('id',)
         verbose_name = 'Наименование ингредиента'
         verbose_name_plural = 'Наименования ингредиентов'
 

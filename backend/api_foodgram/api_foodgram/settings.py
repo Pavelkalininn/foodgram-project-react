@@ -73,7 +73,6 @@ DATABASES = {
     }
 }
 
-
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
@@ -127,3 +126,4 @@ DELETE_SUCCESS = '{name} успешно отменен(а)'
 FRIENDLY_FIRE = 'Нельзя подписываться на самого себя'
 UNIQUE_TOGETHER_EXCEPTION = 'Получено два одинаковых объекта {name}'
 PASSWORD_CHANGED_SUCCESS = 'Пароль успешно изменен'
+NOT_NULL_PARAMETER = 'Не указан ни один {name}'
