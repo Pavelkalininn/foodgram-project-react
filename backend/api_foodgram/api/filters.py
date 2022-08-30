@@ -1,5 +1,5 @@
 import django_filters
-from recipes.models import Recipe, Tag, IngredientName
+from recipes.models import IngredientName, Recipe, Tag
 
 FILTER_CHOICES = (
     (1, True),
