@@ -10,7 +10,9 @@ services:
       - ./.env
 
   backend:
-    image: ${DOCKER_USERNAME}/diploma_back:v2.1
+    image: ${DOCKER_USERNAME}/diploma_back:v2.2
+    build:
+      context: ../backend/api_foodgram/
     restart: always
     volumes:
       - ../docs/:/app/api/docs/

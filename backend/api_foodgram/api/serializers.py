@@ -68,23 +68,22 @@ class IngredientSerializer(serializers.ModelSerializer):
     def get_measurement_unit(self, obj):
         return obj.ingredient_name.measurement_unit
 
-
-class IngredientCreateSerializer(serializers.ModelSerializer):
-    id = serializers.PrimaryKeyRelatedField(
-        queryset=IngredientName.objects.all(),
-    )
-    amount = serializers.IntegerField()
-
-    class Meta:
-        fields = 'id', 'amount'
-        model = Ingredient
-
     def validate_amount(self, value):
         if value <= 0:
             raise serializers.ValidationError(
                 IS_A_POSITIVE_INT.format(name='количество ингредиента')
             )
         return value
+
+
+class IngredientCreateSerializer(IngredientSerializer):
+    id = serializers.PrimaryKeyRelatedField(
+        queryset=IngredientName.objects.all(),
+    )
+
+    class Meta:
+        fields = 'id', 'amount'
+        model = Ingredient
 
 
 class RecipeReadSerializer(serializers.ModelSerializer):
