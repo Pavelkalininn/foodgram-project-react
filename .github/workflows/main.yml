@@ -43,7 +43,7 @@ jobs:
         with:
           push: true
           context: backend/api_foodgram/
-          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_back:v2.0
+          tags: ${{ secrets.DOCKER_USERNAME }}/diploma_back:v2.1
 
       - name: Push frontend to Docker Hub
         uses: docker/build-push-action@v2

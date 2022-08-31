@@ -10,7 +10,7 @@ services:
       - ./.env
 
   backend:
-    image: ${DOCKER_USERNAME}/diploma_back:v2.0
+    image: ${DOCKER_USERNAME}/diploma_back:v2.1
     restart: always
     volumes:
       - ../docs/:/app/api/docs/

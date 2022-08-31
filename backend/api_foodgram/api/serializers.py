@@ -79,6 +79,13 @@ class IngredientCreateSerializer(serializers.ModelSerializer):
         fields = 'id', 'amount'
         model = Ingredient
 
+    def validate_amount(self, value):
+        if value <= 0:
+            raise serializers.ValidationError(
+                IS_A_POSITIVE_INT.format(name='количество ингредиента')
+            )
+        return value
+
 
 class RecipeReadSerializer(serializers.ModelSerializer):
     image = Base64ImageField(max_length=None, use_url=True)
