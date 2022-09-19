@@ -123,7 +123,12 @@ class TagViewSet(
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
-    queryset = Recipe.objects.all()
+    queryset = Recipe.objects.prefetch_related(
+        'tags',
+        'ingredients'
+    ).select_related(
+        'author'
+    ).all()
     pagination_class = LargeResultsSetPagination
     filter_backends = (DjangoFilterBackend,)
     filterset_class = RecipeFilter

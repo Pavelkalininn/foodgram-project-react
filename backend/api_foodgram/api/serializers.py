@@ -124,13 +124,6 @@ class RecipeCreateSerializer(serializers.ModelSerializer):
         fields = '__all__'
         model = Recipe
 
-    def validate_cooking_time(self, value):
-        if value <= 0:
-            raise serializers.ValidationError(
-                IS_A_POSITIVE_INT.format(name='время приготовления')
-            )
-        return value
-
     def validate_ingredients(self, value):
         ingredient_ids = [
             ingredient.get('id').id
