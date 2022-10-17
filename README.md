@@ -1,27 +1,15 @@
-# Foodgram - социальная сеть для обмена рецептами
+# Foodgram - a social network for sharing recipes
 
 ![Workflow](https://github.com/Pavelkalininn/foodgram-project-react/actions/workflows/main.yml/badge.svg)
 
-Доступен по адресу http://diploma.sytes.net/
-Важно! Очистить все данные браузера перед входом на сайт, тогда не будет ошибки CSRF
+## Description
 
-Пробный период закончился у Яндекс облака (из старой переписки).
+To exchange recipes, you need to log in (create an account) and click the "create recipe"
+button To add a recipe to your shopping list or favorites and subscribe to the
+author's recipes, you need to open the appropriate tabs, or click
+the appropriate buttons on the recipe.
 
-Для входа под одним из трех предзаполненых аккаунтов необходимо ввести следующие данные:
-
-    id | почта          | пароль
-    1  | m@ya.ru        | Guguruge 
-    2  | first@user.ru  | Guguruge
-    3  | second@user.ru | Guguruge
-
-## Описание
-
-Для обмена рецептами необходимо залогиниться (создать аккаунт) и нажать кнопку "создать рецепт"
-Для для добавления рецепта в список покупок или избранное и подписания на рецепты
-автора необходимо открывать соответствующие вкладки, или на рецепте нажимать
-соответствующие кнопки.
-
-## Технологии
+## Technologies
 
     Django==3.2.15
     django-filter==22.1
@@ -40,14 +28,14 @@
     pytest==6.2.4
     pytest-django==4.4.0
 
-## Шаблон наполнения env-файла лежит по адресу: 
+## The template for filling the env file is located at: 
 
 [infra/example.env](./infra/example.env)
-Для запуска CI необходимо наличие переменной DOCKER_USERNAME=guguruge в окружении Github secrets
+To run CI, the DOCKER_USERNAME=guguruge variable must be present in the Github secrets environment
 
-## Запуск проекта:
+## Project launching:
 
-### Для запуска проекта, применения миграций, создания суперюзера, загрузки статики и добавления в БД данных из фикстур соответственно необходимо в папке infra выполнить команды:
+### To launch a project, apply migrations, create a superuser, load static and add data from fixtures to the database, respectively, you need to run the commands in the infra folder:
     
     docker-compose up -d --build
     sudo docker-compose exec backend python manage.py migrate
@@ -55,19 +43,19 @@
     sudo docker-compose exec backend python manage.py collectstatic --no-input
     sudo docker-compose exec backend python manage.py loaddata ingredient.json
 
-после чего будет собран и запущен контейнер, админка доступна по адресу:  
+after that, the container will be assembled and launched, the admin panel is available at:  
 
     /admin/
 
 
-для остановки контейнера необходимо в папке infra выполнить:
+to stop and clean the container, run in the infra folder:
 
      docker-compose down -v
 
 
-## Документация с примерами запросов API доступна по адресу:
+## Documentation with examples of API requests is available at:
 
     /api/docs/
 
 
-Автор: [__Паша Калинин__](https://github.com/Pavelkalininn)
+Author: [__Pavel Kalinin__](https://github.com/Pavelkalininn)
