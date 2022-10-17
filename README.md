@@ -31,6 +31,7 @@ the appropriate buttons on the recipe.
 ## The template for filling the env file is located at: 
 
 [infra/example.env](./infra/example.env)
+
 To run CI, the DOCKER_USERNAME=guguruge variable must be present in the Github secrets environment
 
 ## Project launching:
